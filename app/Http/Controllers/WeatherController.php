@@ -47,32 +47,36 @@ class WeatherController extends Controller
             $request->city
         );
 
+        //dd($weather);
+
         /*
-        |--------------------------------------------------------------------------
-        | Variables principales
-        |--------------------------------------------------------------------------
-        */
+|--------------------------------------------------------------------------
+| Variables principales
+|--------------------------------------------------------------------------
+*/
 
-        $temp =
-            $weather['main']['temp'] ?? 0;
-
-        $humidity =
-            $weather['main']['humidity'] ?? 0;
-
-        $wind =
-            $weather['wind']['speed'] ?? 0;
-
-        $description =
-            $weather['weather'][0]['description'] ?? '';
+        $temp = $weather['main']['temp'] ?? 0;
+        $humidity = $weather['main']['humidity'] ?? 0;
+        $wind = $weather['wind']['speed'] ?? 0;
+        $description = $weather['weather'][0]['description'] ?? '';
+        $weatherId = $weather['weather'][0]['id'] ?? 0;
 
         /*
         |--------------------------------------------------------------------------
-        | Lluvia
+        | Detección de lluvia
         |--------------------------------------------------------------------------
+        |
+        | 2xx = tormenta
+        | 3xx = llovizna
+        | 5xx = lluvia
+        |
         */
 
-        $raining =
-            isset($weather['rain'])
+        $hasRain =
+            isset($weather['rain']) ||
+            ($weatherId >= 200 && $weatherId < 600);
+
+        $raining = $hasRain
             ? 'LLUVIA DETECTADA'
             : 'SIN LLUVIA';
 
@@ -82,10 +86,22 @@ class WeatherController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $temperatureStatus =
-            $temp > 32
-            ? 'TEMPERATURA MUY ALTA'
-            : 'TEMPERATURA ESTABLE';
+        if ($temp > 35) {
+
+            $temperatureStatus = 'TEMPERATURA EXTREMADAMENTE ALTA';
+
+        } elseif ($temp > 30) {
+
+            $temperatureStatus = 'TEMPERATURA ALTA';
+
+        } elseif ($temp < 10) {
+
+            $temperatureStatus = 'TEMPERATURA MUY BAJA';
+
+        } else {
+
+            $temperatureStatus = 'TEMPERATURA NORMAL';
+        }
 
         /*
         |--------------------------------------------------------------------------
@@ -93,31 +109,21 @@ class WeatherController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        /*
-|--------------------------------------------------------------------------
-| Estado cultivo inteligente
-|--------------------------------------------------------------------------
-*/
+        if ($hasRain) {
 
-        if ($humidity > 90) {
+            $cropStatus = 'RIESGO POR LLUVIA';
 
-            $cropStatus =
-                'ALTO RIESGO DE HONGOS';
+        } elseif ($humidity > 90) {
 
-        } elseif ($temp > 35) {
-
-            $cropStatus =
-                'ESTRÉS TÉRMICO EN CULTIVO';
+            $cropStatus = 'ALTO RIESGO DE HONGOS';
 
         } elseif ($wind > 20) {
 
-            $cropStatus =
-                'RIESGO POR VIENTOS FUERTES';
+            $cropStatus = 'VIENTOS FUERTES';
 
-        } elseif (isset($weather['rain'])) {
+        } elseif ($temp > 35) {
 
-            $cropStatus =
-                'EXCESO DE HUMEDAD EN CULTIVO';
+            $cropStatus = 'ESTRÉS TÉRMICO';
 
         } elseif (
             $humidity >= 50 &&
@@ -126,33 +132,34 @@ class WeatherController extends Controller
             $temp <= 30
         ) {
 
-            $cropStatus =
-                'CULTIVO EN CONDICIONES ÓPTIMAS';
+            $cropStatus = 'CULTIVO EN CONDICIONES ÓPTIMAS';
 
         } else {
 
-            $cropStatus =
-                'CULTIVO ESTABLE';
-
+            $cropStatus = 'CULTIVO ESTABLE';
         }
+
         /*
         |--------------------------------------------------------------------------
-        | Nivel fumigación
+        | Nivel de fumigación
         |--------------------------------------------------------------------------
         */
 
-        if ($wind < 10 && $humidity < 80) {
+        if ($hasRain) {
 
-            $level = 'EXCELENTE';
+            $level = 'PELIGROSO';
 
-        } elseif ($wind < 15) {
+        } elseif ($wind > 15) {
+
+            $level = 'PELIGROSO';
+
+        } elseif ($humidity > 85) {
 
             $level = 'MODERADO';
 
         } else {
 
-            $level = 'PELIGROSO';
-
+            $level = 'EXCELENTE';
         }
 
         /*
@@ -161,25 +168,30 @@ class WeatherController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if (
-            $wind < 10 &&
-            $humidity < 80 &&
-            !isset($weather['rain'])
-        ) {
+        if ($hasRain) {
 
             $recommendation =
-                'CONDICIONES ÓPTIMAS PARA FUMIGAR';
+                'NO FUMIGAR: EXISTE LLUVIA O LLOVIZNA';
 
-        } elseif ($wind < 15) {
+        } elseif ($wind > 15) {
 
             $recommendation =
-                'FUMIGACIÓN MODERADA';
+                'NO FUMIGAR: VIENTO FUERTE';
+
+        } elseif ($humidity > 85) {
+
+            $recommendation =
+                'NO FUMIGAR: HUMEDAD MUY ALTA';
+
+        } elseif ($temp > 35) {
+
+            $recommendation =
+                'NO FUMIGAR: TEMPERATURA EXCESIVA';
 
         } else {
 
             $recommendation =
-                'NO RECOMENDABLE PARA FUMIGAR';
-
+                'CONDICIONES ÓPTIMAS PARA FUMIGAR';
         }
 
         /*

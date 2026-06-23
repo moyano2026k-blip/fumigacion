@@ -286,47 +286,139 @@ const submit = () => {
     </div>
 
     <!-- ALERTS -->
+    <!-- ALERTAS DINÁMICAS -->
     <div class="bg-white rounded-[35px] shadow-2xl overflow-hidden">
       <!-- HEADER -->
-      <div class="bg-gradient-to-r from-red-600 to-orange-600 p-8 text-white">
-        <div class="flex items-center gap-5">
-          <AlertTriangle class="w-12 h-12" />
+      <div
+        class="p-8 text-white"
+        :class="
+          weather?.recommendation?.toLowerCase().includes('riesgo')
+            ? 'bg-gradient-to-r from-red-600 to-orange-600'
+            : 'bg-gradient-to-r from-green-600 to-emerald-600'
+        "
+      >
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-5">
+            <AlertTriangle class="w-12 h-12" />
 
-          <div>
-            <h2 class="text-4xl font-black">Alertas Agrícolas</h2>
+            <div>
+              <h2 class="text-4xl font-black">Centro de Alertas</h2>
 
-            <p class="text-red-100 mt-2">Supervisión preventiva basada en clima real.</p>
+              <p class="mt-2 opacity-90">
+                Evaluación automática de condiciones agrícolas.
+              </p>
+            </div>
+          </div>
+
+          <div class="bg-white/20 px-5 py-2 rounded-full text-lg font-bold animate-pulse">
+            {{
+              weather?.recommendation?.toLowerCase().includes("riesgo")
+                ? "RIESGO ALTO"
+                : "ESTABLE"
+            }}
           </div>
         </div>
       </div>
 
       <!-- CONTENT -->
       <div class="p-10">
-        <div class="space-y-5">
-          <div class="bg-red-50 border border-red-100 rounded-3xl p-6">
-            <h3 class="text-2xl font-black text-red-700">
-              {{ weather?.recommendation ?? "Sin alertas" }}
+        <div class="grid md:grid-cols-3 gap-6">
+          <!-- RECOMENDACION -->
+          <div
+            class="rounded-3xl p-6 border transition hover:scale-105"
+            :class="
+              weather?.recommendation?.toLowerCase().includes('riesgo')
+                ? 'bg-red-50 border-red-200'
+                : 'bg-green-50 border-green-200'
+            "
+          >
+            <h3
+              class="text-2xl font-black"
+              :class="
+                weather?.recommendation?.toLowerCase().includes('riesgo')
+                  ? 'text-red-700'
+                  : 'text-green-700'
+              "
+            >
+              Recomendación
             </h3>
 
-            <p class="text-gray-600 mt-2">
-              Recomendación automática generada según condiciones climáticas.
+            <p class="mt-4 text-gray-700 font-medium">
+              {{ weather?.recommendation ?? "Sin recomendaciones disponibles" }}
             </p>
           </div>
 
-          <div class="bg-blue-50 border border-blue-100 rounded-3xl p-6">
-            <h3 class="text-2xl font-black text-blue-700">
-              {{ weather?.crop_status ?? "Sin monitoreo" }}
-            </h3>
+          <!-- CULTIVO -->
+          <div
+            class="rounded-3xl p-6 border bg-blue-50 border-blue-200 transition hover:scale-105"
+          >
+            <h3 class="text-2xl font-black text-blue-700">Estado del Cultivo</h3>
 
-            <p class="text-gray-600 mt-2">Estado agrícola actual detectado.</p>
+            <p class="mt-4 text-gray-700 font-medium">
+              {{ weather?.crop_status ?? "Sin monitoreo" }}
+            </p>
           </div>
 
-          <div class="bg-green-50 border border-green-100 rounded-3xl p-6">
-            <h3 class="text-2xl font-black text-green-700">
-              {{ weather?.rain_status ?? "Sin datos" }}
-            </h3>
+          <!-- LLUVIA -->
+          <div
+            class="rounded-3xl p-6 border bg-cyan-50 border-cyan-200 transition hover:scale-105"
+          >
+            <h3 class="text-2xl font-black text-cyan-700">Condición Climática</h3>
 
-            <p class="text-gray-600 mt-2">Condiciones meteorológicas monitoreadas.</p>
+            <p class="mt-4 text-gray-700 font-medium">
+              {{ weather?.rain_status ?? "Sin datos meteorológicos" }}
+            </p>
+          </div>
+        </div>
+
+        <!-- RESUMEN GENERAL -->
+        <div
+          class="mt-8 rounded-3xl p-8 border"
+          :class="
+            weather?.humidity > 80 ||
+            weather?.temperature > 30 ||
+            weather?.temperature < 5
+              ? 'bg-red-50 border-red-200'
+              : 'bg-green-50 border-green-200'
+          "
+        >
+          <h3 class="text-3xl font-black mb-4">Diagnóstico General</h3>
+
+          <div class="grid md:grid-cols-3 gap-4 text-lg">
+            <div>
+              🌡️ Temperatura:
+              <strong>{{ weather?.temperature ?? "--" }}°C</strong>
+            </div>
+
+            <div>
+              💧 Humedad:
+              <strong>{{ weather?.humidity ?? "--" }}%</strong>
+            </div>
+
+            <div>
+              🌬️ Viento:
+              <strong>{{ weather?.wind ?? "--" }}</strong>
+            </div>
+          </div>
+
+          <div class="mt-6">
+            <span
+              v-if="
+                weather?.humidity > 80 ||
+                weather?.temperature > 30 ||
+                weather?.temperature < 5
+              "
+              class="inline-flex items-center gap-2 bg-red-600 text-white px-5 py-2 rounded-full font-bold animate-pulse"
+            >
+              ⚠️ Atención requerida
+            </span>
+
+            <span
+              v-else
+              class="inline-flex items-center gap-2 bg-green-600 text-white px-5 py-2 rounded-full font-bold"
+            >
+              ✅ Condiciones favorables
+            </span>
           </div>
         </div>
       </div>
