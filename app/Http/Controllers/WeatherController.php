@@ -11,22 +11,10 @@ use Inertia\Inertia;
 
 class WeatherController extends Controller
 {
-    /*
-    |--------------------------------------------------------------------------
-    | Vista principal clima
-    |--------------------------------------------------------------------------
-    */
-
     public function index()
     {
         return Inertia::render('Clima/Index');
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Consultar clima
-    |--------------------------------------------------------------------------
-    */
 
     public function search(
         Request $request,
@@ -37,40 +25,15 @@ class WeatherController extends Controller
             'city' => 'required'
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Consumir API
-        |--------------------------------------------------------------------------
-        */
-
         $weather = $weatherService->getWeather(
             $request->city
         );
-
-        //dd($weather);
-
-        /*
-|--------------------------------------------------------------------------
-| Variables principales
-|--------------------------------------------------------------------------
-*/
 
         $temp = $weather['main']['temp'] ?? 0;
         $humidity = $weather['main']['humidity'] ?? 0;
         $wind = $weather['wind']['speed'] ?? 0;
         $description = $weather['weather'][0]['description'] ?? '';
         $weatherId = $weather['weather'][0]['id'] ?? 0;
-
-        /*
-        |--------------------------------------------------------------------------
-        | Detección de lluvia
-        |--------------------------------------------------------------------------
-        |
-        | 2xx = tormenta
-        | 3xx = llovizna
-        | 5xx = lluvia
-        |
-        */
 
         $hasRain =
             isset($weather['rain']) ||
@@ -79,12 +42,6 @@ class WeatherController extends Controller
         $raining = $hasRain
             ? 'LLUVIA DETECTADA'
             : 'SIN LLUVIA';
-
-        /*
-        |--------------------------------------------------------------------------
-        | Estado temperatura
-        |--------------------------------------------------------------------------
-        */
 
         if ($temp > 35) {
 
@@ -102,12 +59,6 @@ class WeatherController extends Controller
 
             $temperatureStatus = 'TEMPERATURA NORMAL';
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Estado cultivo
-        |--------------------------------------------------------------------------
-        */
 
         if ($hasRain) {
 
@@ -139,11 +90,6 @@ class WeatherController extends Controller
             $cropStatus = 'CULTIVO ESTABLE';
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Nivel de fumigación
-        |--------------------------------------------------------------------------
-        */
 
         if ($hasRain) {
 
@@ -161,12 +107,6 @@ class WeatherController extends Controller
 
             $level = 'EXCELENTE';
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Recomendación inteligente
-        |--------------------------------------------------------------------------
-        */
 
         if ($hasRain) {
 
@@ -193,12 +133,6 @@ class WeatherController extends Controller
             $recommendation =
                 'CONDICIONES ÓPTIMAS PARA FUMIGAR';
         }
-
-        /*
-        |--------------------------------------------------------------------------
-        | Guardar historial
-        |--------------------------------------------------------------------------
-        */
 
         WeatherHistory::create([
 
@@ -236,28 +170,11 @@ class WeatherController extends Controller
 
         ]);
 
-        /*
-        |--------------------------------------------------------------------------
-        | Redireccionar dashboard
-        |--------------------------------------------------------------------------
-        */
-
         return redirect()
             ->route('dashboard');
     }
-
-    /*
-    |--------------------------------------------------------------------------
-    | Historial climático
-    |--------------------------------------------------------------------------
-    */
     public function history()
     {
-        /*
-        |--------------------------------------------------------------------------
-        | Administrador ve TODO
-        |--------------------------------------------------------------------------
-        */
 
         if (auth()->user()->role == 'admin') {
 
@@ -266,12 +183,6 @@ class WeatherController extends Controller
                 ->get();
 
         } else {
-
-            /*
-            |--------------------------------------------------------------------------
-            | Usuario/Tecnico solo sus consultas
-            |--------------------------------------------------------------------------
-            */
 
             $histories = WeatherHistory::where(
                 'user_id',
@@ -289,5 +200,128 @@ class WeatherController extends Controller
                 'histories' => $histories
             ]
         );
+    }
+
+    public function forecast(
+        Request $request,
+        OpenWeatherService $weatherService
+    ) {
+        $request->validate([
+            'city' => 'required'
+        ]);
+
+        $forecast = $weatherService->getWeatherForecast(
+            $request->city
+        );
+
+        $days = collect($forecast['list'])
+            ->groupBy(function ($item) {
+                return date('Y-m-d', strtotime($item['dt_txt']));
+            })
+            ->map(function ($items, $date) {
+                return [
+                    'date' => $date,
+                    'temp_min' => collect($items)->min('main.temp_min'),
+                    'temp_max' => collect($items)->max('main.temp_max'),
+                    'humidity' => round(
+                        collect($items)->avg('main.humidity')
+                    ),
+                    'description' => $items[0]['weather'][0]['description'],
+                    'rain_probability' => max(
+                        array_column($items->toArray(), 'pop')
+                    ) * 100,
+                ];
+            })
+            ->values();
+
+        return response()->json($days);
+    }
+
+    public function forecastAnalysis(
+        Request $request,
+        OpenWeatherService $weatherService
+    ) {
+        $request->validate([
+            'city' => 'required'
+        ]);
+
+        $forecast = $weatherService->getWeatherForecast(
+            $request->city
+        );
+
+        $days = collect($forecast['list'])
+            ->groupBy(function ($item) {
+                return date('Y-m-d', strtotime($item['dt_txt']));
+            })
+            ->map(function ($items, $date) {
+
+                $temp = round(
+                    collect($items)->avg('main.temp')
+                );
+
+                $humidity = round(
+                    collect($items)->avg('main.humidity')
+                );
+
+                $wind = round(
+                    collect($items)->avg('wind.speed')
+                );
+
+                $hasRain = collect($items)
+                    ->contains(function ($item) {
+
+                        $weatherId =
+                            $item['weather'][0]['id'] ?? 0;
+
+                        return $weatherId >= 200 &&
+                            $weatherId < 600;
+                    });
+
+                if ($hasRain || $wind > 15) {
+
+                    $level = 'PELIGROSO';
+
+                } elseif ($humidity > 85) {
+
+                    $level = 'MODERADO';
+
+                } else {
+
+                    $level = 'EXCELENTE';
+                }
+
+                if ($hasRain) {
+
+                    $recommendation =
+                        'NO FUMIGAR - POSIBLE LLUVIA';
+
+                } elseif ($wind > 15) {
+
+                    $recommendation =
+                        'NO FUMIGAR - VIENTO FUERTE';
+
+                } elseif ($humidity > 85) {
+
+                    $recommendation =
+                        'PRECAUCIÓN - HUMEDAD ALTA';
+
+                } else {
+
+                    $recommendation =
+                        'RECOMENDADO PARA FUMIGAR';
+                }
+
+                return [
+                    'date' => $date,
+                    'temperature' => $temp,
+                    'humidity' => $humidity,
+                    'wind' => $wind,
+                    'level' => $level,
+                    'recommendation' => $recommendation,
+                ];
+            })
+            ->values();
+
+        return response()->json($days);
     }
 }

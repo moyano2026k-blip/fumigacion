@@ -5,25 +5,15 @@ use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\WeatherController;
-
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
-
 use Inertia\Inertia;
-
-
 use App\Http\Controllers\WelcomeController;
 
 Route::get(
     '/',
     [WelcomeController::class, 'index']
 );
-
-/*
-|--------------------------------------------------------------------------
-| Dashboard
-|--------------------------------------------------------------------------
-*/
 
 Route::get(
     '/dashboard',
@@ -32,30 +22,14 @@ Route::get(
     ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
-/*
-|--------------------------------------------------------------------------
-| Auth Routes
-|--------------------------------------------------------------------------
-*/
-
 Route::middleware(['auth'])->group(function () {
 
-    /*
-    |--------------------------------------------------------------------------
-    | Usuarios
-    |--------------------------------------------------------------------------
-    */
 
     Route::resource(
         'usuarios',
         UserController::class
     );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Clima
-    |--------------------------------------------------------------------------
-    */
 
     Route::get(
         '/clima',
@@ -67,22 +41,10 @@ Route::middleware(['auth'])->group(function () {
         [WeatherController::class, 'search']
     );
 
-    /*
-    |--------------------------------------------------------------------------
-    | Historial Climático
-    |--------------------------------------------------------------------------
-    */
-
     Route::get(
         '/historial-climatico',
         [WeatherController::class, 'history']
     );
-
-    /*
-    |--------------------------------------------------------------------------
-    | Reportes
-    |--------------------------------------------------------------------------
-    */
 
     Route::get(
         '/reportes',
@@ -103,12 +65,7 @@ Route::middleware(['auth'])->group(function () {
         '/reportes-tecnicos',
         [ReportController::class, 'technical']
     );
-    /*
-    |--------------------------------------------------------------------------
-    | Perfil
-    |--------------------------------------------------------------------------
-    */
-
+    
     Route::get(
         '/profile',
         [ProfileController::class, 'edit']
@@ -126,22 +83,20 @@ Route::middleware(['auth'])->group(function () {
 
 });
 
-/*
-|--------------------------------------------------------------------------
-| Test API
-|--------------------------------------------------------------------------
-*/
-
 Route::get('/test-api', function () {
 
     return env('OPENWEATHER_API_KEY');
 
 });
 
-/*
-|--------------------------------------------------------------------------
-| Auth Breeze
-|--------------------------------------------------------------------------
-*/
+Route::post(
+    '/weather/forecast',
+    [WeatherController::class, 'forecast']
+)->name('weather.forecast');
+
+Route::post(
+    '/weather/forecast-analysis',
+    [WeatherController::class, 'forecastAnalysis']
+)->name('weather.forecast.analysis');
 
 require __DIR__ . '/auth.php';

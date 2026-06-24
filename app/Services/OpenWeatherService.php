@@ -22,4 +22,21 @@ class OpenWeatherService
 
         return $response->json();
     }
+
+    public function getWeatherForecast($city)
+    {
+        $apiKey = env('OPENWEATHER_API_KEY');
+
+        $response = Http::get(
+            'https://api.openweathermap.org/data/2.5/forecast',
+            [
+                'q' => $city,
+                'appid' => $apiKey,
+                'units' => 'metric',
+                'lang' => 'es'
+            ]
+        );
+
+        return $response->json();
+    }
 }

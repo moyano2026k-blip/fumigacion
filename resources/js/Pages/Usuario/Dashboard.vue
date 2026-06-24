@@ -17,6 +17,7 @@ import {
 
 defineProps({
   weather: Object,
+  forecast: Array,
 });
 
 const form = useForm({
@@ -254,6 +255,53 @@ const submit = () => {
                 {{ weather?.city ?? "Sin datos" }}
               </h3>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="forecast?.length" class="bg-white rounded-[35px] shadow-2xl mt-10 p-8">
+      <h2 class="text-3xl font-black text-gray-800 mb-8">Pronóstico Próximos 5 Días</h2>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-5">
+        <div
+          v-for="day in forecast"
+          :key="day.date"
+          class="border border-gray-200 rounded-3xl p-6"
+        >
+          <h3 class="font-black text-lg">
+            {{ day.date }}
+          </h3>
+
+          <p class="mt-4 text-4xl font-black text-green-700">{{ day.temperature }}°C</p>
+
+          <p class="mt-2 text-gray-600 capitalize">
+            {{ day.description }}
+          </p>
+
+          <div class="mt-4 space-y-2">
+            <p>💧 {{ day.humidity }}%</p>
+            <p>🌬 {{ day.wind }}</p>
+          </div>
+
+          <div
+            class="mt-5 rounded-xl py-2 text-center font-black"
+            :class="
+              day.level === 'PELIGROSO'
+                ? 'bg-red-100 text-red-700'
+                : day.level === 'MODERADO'
+                ? 'bg-yellow-100 text-yellow-700'
+                : 'bg-green-100 text-green-700'
+            "
+          >
+            {{ day.level }}
+          </div>
+
+          <div
+            class="mt-3 rounded-xl py-2 text-center font-bold"
+            :class="day.rain ? 'bg-red-50 text-red-600' : 'bg-green-50 text-green-600'"
+          >
+            {{ day.rain ? "NO FUMIGAR" : "APTO PARA FUMIGAR" }}
           </div>
         </div>
       </div>
