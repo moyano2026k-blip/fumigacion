@@ -21,9 +21,9 @@ const props = defineProps({
 });
 
 const criticalAlerts = computed(() => {
-  return props.histories.filter(
-    (item) => item.temperature > 30 || item.temperature < 5 || item.humidity > 80
-  );
+  return props.histories.filter((item) => {
+    return item.level === "PELIGROSO" || item.level === "MODERADO";
+  });
 });
 
 const riskLevel = computed(() => {
@@ -88,7 +88,7 @@ const agriculturalStatus = computed(() => {
         <AlertTriangle class="w-12 h-12 text-red-600 mb-5" />
 
         <h2 class="text-5xl font-black text-gray-800">
-          {{ alerts }}
+          {{ criticalAlerts.length }}
         </h2>
 
         <p class="text-gray-500 mt-2">Alertas Detectadas</p>

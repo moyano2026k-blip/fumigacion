@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\WeatherHistory;
+use App\Models\User;
 use Inertia\Inertia;
 use App\Services\OpenWeatherService;
 
@@ -14,8 +15,29 @@ class DashboardController extends Controller
 
         if ($role == 'admin') {
 
+            $users = User::count();
+
+            $queries = WeatherHistory::count();
+
+            $cities = WeatherHistory::distinct('city')
+                ->count('city');
+
+            $alerts = WeatherHistory::where(
+                'level',
+                'PELIGROSO'
+            )->count();
+
+            $lastQuery = WeatherHistory::latest()->first();
+
             return Inertia::render(
-                'Admin/Dashboard'
+                'Admin/Dashboard',
+                [
+                    'users' => $users,
+                    'queries' => $queries,
+                    'cities' => $cities,
+                    'alerts' => $alerts,
+                    'lastQuery' => $lastQuery,
+                ]
             );
         }
 
@@ -30,9 +52,10 @@ class DashboardController extends Controller
                 ->count('city');
 
             $alerts = WeatherHistory::where(
-                'recommendation',
-                'NO RECOMENDABLE PARA FUMIGAR'
+                'level',
+                'PELIGROSO'
             )->count();
+
 
             return Inertia::render(
                 'Tecnico/Dashboard',

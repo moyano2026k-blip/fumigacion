@@ -19,7 +19,7 @@ class ReportController extends Controller
         $histories = WeatherHistory::latest()
             ->take(10)
             ->get();
-            
+
         /*
         |--------------------------------------------------------------------------
         | Estadisticas
@@ -87,14 +87,16 @@ class ReportController extends Controller
 
     public function usersPdf()
     {
-        $users = User::all();
+        $histories = WeatherHistory::with('user')
+            ->latest()
+            ->get();
 
         $pdf = Pdf::loadView(
-            'pdf.users',
-            compact('users')
+            'pdf.users', // <- corresponde a resources/views/pdf/users.blade.php
+            compact('histories')
         );
 
-        return $pdf->download('usuarios.pdf');
+        return $pdf->download('historial-climatico.pdf');
     }
 
     public function technical()
