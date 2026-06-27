@@ -15,6 +15,7 @@ class WeatherHistory extends Model
         'wind',
         'description',
         'recommendation',
+        'recommended_time',
 
         'rain_status',
         'level',

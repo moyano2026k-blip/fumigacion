@@ -15,9 +15,12 @@ import {
   Search,
 } from "lucide-vue-next";
 
-defineProps({
+const props = defineProps({
   weather: Object,
+
   forecast: Array,
+
+  recommendedTime: String,
 });
 
 const form = useForm({
@@ -231,28 +234,67 @@ const submit = () => {
           </div>
 
           <!-- DETAILS -->
+
+          <!-- DETAILS -->
           <div class="space-y-5">
+            <!-- ESTADO -->
             <div class="bg-gray-50 p-6 rounded-3xl">
               <p class="text-gray-500 font-semibold">Estado Climático</p>
 
               <h3 class="text-2xl font-black text-gray-800 mt-2 capitalize">
-                {{ weather?.description ?? "Sin datos" }}
+                {{ weather?.description }}
               </h3>
             </div>
 
-            <div class="bg-gray-50 p-6 rounded-3xl">
-              <p class="text-gray-500 font-semibold">Nivel Fumigación</p>
+            <!-- NIVEL -->
 
-              <h3 class="text-2xl font-black text-gray-800 mt-2">
-                {{ weather?.level ?? "Sin datos" }}
+            <div
+              class="p-6 rounded-3xl"
+              :class="
+                weather?.level == 'PELIGROSO'
+                  ? 'bg-red-50'
+                  : weather?.level == 'MODERADO'
+                  ? 'bg-yellow-50'
+                  : 'bg-green-50'
+              "
+            >
+              <p class="text-gray-500 font-semibold">Nivel de Fumigación</p>
+
+              <h3
+                class="text-2xl font-black mt-2"
+                :class="
+                  weather?.level == 'PELIGROSO'
+                    ? 'text-red-700'
+                    : weather?.level == 'MODERADO'
+                    ? 'text-yellow-700'
+                    : 'text-green-700'
+                "
+              >
+                {{ weather?.level }}
               </h3>
             </div>
+
+            <!-- HORARIO -->
+
+            <div class="bg-blue-50 p-6 rounded-3xl">
+              <p class="text-gray-500 font-semibold">Horario recomendado</p>
+
+              <h3 class="text-2xl font-black text-blue-700 mt-2">
+                {{ recommendedTime }}
+              </h3>
+
+              <p class="text-sm text-gray-600 mt-3">
+                Horario sugerido según las condiciones climáticas actuales.
+              </p>
+            </div>
+
+            <!-- CIUDAD -->
 
             <div class="bg-gray-50 p-6 rounded-3xl">
               <p class="text-gray-500 font-semibold">Ciudad Consultada</p>
 
               <h3 class="text-2xl font-black text-gray-800 mt-2">
-                {{ weather?.city ?? "Sin datos" }}
+                {{ weather?.city }}
               </h3>
             </div>
           </div>

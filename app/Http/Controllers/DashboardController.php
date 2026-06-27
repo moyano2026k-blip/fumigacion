@@ -52,6 +52,31 @@ class DashboardController extends Controller
             ->latest()
             ->first();
 
+
+        $recommendedTime = '06:00 - 09:00';
+
+        if ($latestWeather) {
+
+            if (str_contains($latestWeather->recommendation, 'LLUVIA')) {
+
+                $recommendedTime = 'NO RECOMENDADO';
+
+            } elseif ($latestWeather->wind > 15) {
+
+                $recommendedTime = 'ESPERE A QUE DISMINUYA EL VIENTO';
+
+            } elseif ($latestWeather->humidity > 85) {
+
+                $recommendedTime = '17:00 - 18:30';
+
+            } elseif ($latestWeather->temperature > 35) {
+
+                $recommendedTime = '18:00 - 19:00';
+
+            }
+
+        }
+
         $forecast = [];
 
         if ($latestWeather) {
@@ -125,6 +150,7 @@ class DashboardController extends Controller
             [
                 'weather' => $latestWeather,
                 'forecast' => $forecast,
+                'recommendedTime' => $recommendedTime,
             ]
         );
     }

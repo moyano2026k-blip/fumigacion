@@ -1,4 +1,3 @@
-```vue id="ux72la"
 <script setup>
 import AuthenticatedLayout from "@/Layouts/AuthenticatedLayout.vue";
 import { Head } from "@inertiajs/vue3";
@@ -9,72 +8,49 @@ import {
   Wind,
   Droplets,
   Leaf,
-  Sun,
   AlertTriangle,
   CalendarDays,
   Sprout,
   Tractor,
   BarChart3,
+  MapPinned,
+  Clock,
+  ShieldAlert,
 } from "lucide-vue-next";
 
-const clima = {
-  temperatura: 28,
-  humedad: 82,
-  viento: 11,
-  lluvia: 76,
-  estado: "Condiciones óptimas para cultivo",
+const props = defineProps({
+  weather: Object,
+
+  forecast: Array,
+
+  recommendedTime: String,
+});
+
+const getRiskColor = (level) => {
+  switch (level) {
+    case "PELIGROSO":
+      return "bg-red-100 text-red-700";
+
+    case "MODERADO":
+      return "bg-yellow-100 text-yellow-700";
+
+    default:
+      return "bg-green-100 text-green-700";
+  }
 };
 
-const predicciones = [
-  {
-    dia: "Lunes",
-    temp: "27°C",
-    lluvia: "80%",
-    estado: "Lluvioso",
-  },
-  {
-    dia: "Martes",
-    temp: "29°C",
-    lluvia: "50%",
-    estado: "Nublado",
-  },
-  {
-    dia: "Miércoles",
-    temp: "31°C",
-    lluvia: "20%",
-    estado: "Soleado",
-  },
-  {
-    dia: "Jueves",
-    temp: "26°C",
-    lluvia: "90%",
-    estado: "Tormenta",
-  },
-];
+const getRiskBorder = (level) => {
+  switch (level) {
+    case "PELIGROSO":
+      return "border-red-200";
 
-const recomendaciones = [
-  "Aplicar fertilización en horas de menor temperatura.",
-  "Revisar drenajes por probabilidad de lluvia alta.",
-  "Mantener monitoreo de humedad para evitar hongos.",
-];
+    case "MODERADO":
+      return "border-yellow-200";
 
-const cultivos = [
-  {
-    nombre: "Plantación Norte",
-    estado: "Saludable",
-    progreso: "85%",
-  },
-  {
-    nombre: "Plantación Sur",
-    estado: "Monitoreo",
-    progreso: "67%",
-  },
-  {
-    nombre: "Plantación Central",
-    estado: "Excelente",
-    progreso: "92%",
-  },
-];
+    default:
+      return "border-green-200";
+  }
+};
 </script>
 
 <template>
@@ -148,7 +124,7 @@ const cultivos = [
                 <p class="text-gray-500">Temperatura</p>
 
                 <h2 class="text-4xl font-black mt-2 text-gray-900">
-                  {{ clima.temperatura }}°C
+                  {{ weather?.temperature ?? "--" }}°C
                 </h2>
               </div>
 
@@ -166,7 +142,7 @@ const cultivos = [
                 <p class="text-gray-500">Humedad</p>
 
                 <h2 class="text-4xl font-black mt-2 text-gray-900">
-                  {{ clima.humedad }}%
+                  {{ weather?.humidity ?? "--" }}%
                 </h2>
               </div>
 
@@ -184,7 +160,7 @@ const cultivos = [
                 <p class="text-gray-500">Viento</p>
 
                 <h2 class="text-4xl font-black mt-2 text-gray-900">
-                  {{ clima.viento }} km/h
+                  {{ weather?.wind ?? "--" }}km/h
                 </h2>
               </div>
 
@@ -199,10 +175,10 @@ const cultivos = [
           >
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-gray-500">Probabilidad de lluvia</p>
+                <p class="text-gray-500">Estado de lluvia</p>
 
                 <h2 class="text-4xl font-black mt-2 text-gray-900">
-                  {{ clima.lluvia }}%
+                  {{ weather?.rain_status ?? "SIN DATOS" }}%
                 </h2>
               </div>
 
@@ -283,7 +259,7 @@ const cultivos = [
                 <p class="text-green-100 text-sm">Estado actual</p>
 
                 <h3 class="text-3xl font-black mt-2">
-                  {{ clima.estado }}
+                  {{ weather?.crop_status }}
                 </h3>
               </div>
 
@@ -291,7 +267,7 @@ const cultivos = [
                 <p class="text-green-100 text-sm">Recomendación IA</p>
 
                 <p class="mt-2 text-lg leading-relaxed">
-                  Buen momento para fertilización y monitoreo preventivo del cultivo.
+                  {{ weather?.recommendation }}
                 </p>
               </div>
             </div>
@@ -312,6 +288,35 @@ const cultivos = [
                   <p class="font-semibold text-gray-700">
                     {{ item }}
                   </p>
+                </div>
+              </div>
+
+              <p class="text-gray-500">Horario recomendado</p>
+
+              <h2 class="text-3xl font-black text-green-700">
+                {{ recommendedTime }}
+              </h2>
+
+              <div class="mt-6 border-t pt-5">
+                <p class="text-gray-500">Ciudad consultada</p>
+
+                <div class="flex items-center gap-2 mt-2">
+                  <MapPinned class="w-5 h-5 text-green-700" />
+
+                  <span class="font-bold">
+                    {{ weather?.city }}
+                  </span>
+
+                  <div class="mt-5">
+                    <p class="text-gray-500">Nivel de fumigación</p>
+
+                    <span
+                      class="inline-flex mt-2 px-4 py-2 rounded-full font-bold"
+                      :class="getRiskColor(weather?.level)"
+                    >
+                      {{ weather?.level }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -371,4 +376,3 @@ const cultivos = [
     </div>
   </AuthenticatedLayout>
 </template>
-```

@@ -19,7 +19,7 @@ class ReportController extends Controller
         $histories = WeatherHistory::latest()
             ->take(10)
             ->get();
-
+            
         /*
         |--------------------------------------------------------------------------
         | Estadisticas

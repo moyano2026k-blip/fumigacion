@@ -134,6 +134,32 @@ class WeatherController extends Controller
                 'CONDICIONES ÓPTIMAS PARA FUMIGAR';
         }
 
+        /*
+            |--------------------------------------------------------------------------
+            | Horario recomendado
+            |--------------------------------------------------------------------------
+            */
+
+        $recommendedTime = '06:00 - 09:00';
+
+        if ($hasRain) {
+
+            $recommendedTime = 'NO RECOMENDADO';
+
+        } elseif ($wind > 15) {
+
+            $recommendedTime = 'ESPERAR A QUE DISMINUYA EL VIENTO';
+
+        } elseif ($humidity > 85) {
+
+            $recommendedTime = '17:00 - 18:30';
+
+        } elseif ($temp > 35) {
+
+            $recommendedTime = '18:00 - 19:00';
+
+        }
+
         WeatherHistory::create([
 
             'user_id' => auth()->id(),
@@ -155,6 +181,8 @@ class WeatherController extends Controller
 
             'recommendation' =>
                 $recommendation,
+            'recommended_time' => $recommendedTime,
+
 
             'rain_status' =>
                 $raining,
@@ -249,6 +277,7 @@ class WeatherController extends Controller
             $request->city
         );
 
+
         $days = collect($forecast['list'])
             ->groupBy(function ($item) {
                 return date('Y-m-d', strtotime($item['dt_txt']));
@@ -311,6 +340,34 @@ class WeatherController extends Controller
                         'RECOMENDADO PARA FUMIGAR';
                 }
 
+                $recommendation = 'CONDICIONES ÓPTIMAS PARA FUMIGAR';
+
+                /*
+                |--------------------------------------------------------------------------
+                | Horario recomendado
+                |--------------------------------------------------------------------------
+                */
+
+                $recommendedTime = '06:00 - 09:00';
+
+                if ($hasRain) {
+
+                    $recommendedTime = 'NO RECOMENDADO';
+
+                } elseif ($wind > 15) {
+
+                    $recommendedTime = 'ESPERAR A QUE DISMINUYA EL VIENTO';
+
+                } elseif ($humidity > 85) {
+
+                    $recommendedTime = '17:00 - 18:30';
+
+                } elseif ($temp > 35) {
+
+                    $recommendedTime = '18:00 - 19:00';
+
+                }
+
                 return [
                     'date' => $date,
                     'temperature' => $temp,
@@ -318,6 +375,7 @@ class WeatherController extends Controller
                     'wind' => $wind,
                     'level' => $level,
                     'recommendation' => $recommendation,
+                    'recommended_time' => $recommendedTime
                 ];
             })
             ->values();
