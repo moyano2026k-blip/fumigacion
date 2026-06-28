@@ -3,6 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Models\WeatherHistory;
+use App\Models\WeatherForecast;
+use App\Models\WeatherAlert;
+use App\Models\ApiLog;
+use App\Models\Location;
 use App\Services\OpenWeatherService;
 
 use Illuminate\Http\Request;
@@ -28,6 +32,18 @@ class WeatherController extends Controller
         $weather = $weatherService->getWeather(
             $request->city
         );
+
+        ApiLog::create([
+
+            'endpoint' => 'weather',
+
+            'response_status' => 200,
+
+            'response_time' => 0,
+
+            'requested_at' => now(),
+
+        ]);
 
         $temp = $weather['main']['temp'] ?? 0;
         $humidity = $weather['main']['humidity'] ?? 0;
@@ -106,6 +122,7 @@ class WeatherController extends Controller
         } else {
 
             $level = 'EXCELENTE';
+
         }
 
         if ($hasRain) {
@@ -134,12 +151,6 @@ class WeatherController extends Controller
                 'CONDICIONES ÓPTIMAS PARA FUMIGAR';
         }
 
-        /*
-            |--------------------------------------------------------------------------
-            | Horario recomendado
-            |--------------------------------------------------------------------------
-            */
-
         $recommendedTime = '06:00 - 09:00';
 
         if ($hasRain) {
@@ -159,6 +170,39 @@ class WeatherController extends Controller
             $recommendedTime = '18:00 - 19:00';
 
         }
+
+        $location = Location::firstOrCreate(
+            [
+                'city' => $weather['name'],
+            ],
+            [
+                'user_id' => auth()->id(),
+                'province' => '',
+                'country' => $weather['sys']['country'] ?? 'EC',
+                'latitude' => $weather['coord']['lat'] ?? null,
+                'longitude' => $weather['coord']['lon'] ?? null,
+            ]
+        );
+
+        $forecast = WeatherForecast::create([
+
+            'location_id' => $location->id,
+
+            'temperature' => $temp,
+
+            'humidity' => $humidity,
+
+            'pressure' => $weather['main']['pressure'] ?? 0,
+
+            'wind_speed' => $wind,
+
+            'weather_condition' => $description,
+
+            'prediction_date' => now(),
+
+            'api_source' => 'OpenWeather',
+
+        ]);
 
         WeatherHistory::create([
 
@@ -318,7 +362,7 @@ class WeatherController extends Controller
 
                     $level = 'EXCELENTE';
                 }
-
+                
                 if ($hasRain) {
 
                     $recommendation =
@@ -341,12 +385,6 @@ class WeatherController extends Controller
                 }
 
                 $recommendation = 'CONDICIONES ÓPTIMAS PARA FUMIGAR';
-
-                /*
-                |--------------------------------------------------------------------------
-                | Horario recomendado
-                |--------------------------------------------------------------------------
-                */
 
                 $recommendedTime = '06:00 - 09:00';
 
