@@ -26,7 +26,7 @@ defineProps({
 </script>
 
 <template>
-  <Head title="AgroClimate" />
+  <Head title="" />
 
   <div class="min-h-screen bg-gradient-to-br from-green-100 via-white to-cyan-100">
     <!-- NAVBAR -->
