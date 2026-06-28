@@ -230,7 +230,7 @@ const agriculturalStatus = computed(() => {
               <h2 class="text-3xl font-black text-gray-800">Centro de Alertas</h2>
             </div>
 
-            <span
+            <!-- <span
               class="px-5 py-2 rounded-full text-white font-bold"
               :class="
                 riskLevel === 'ALTO'
@@ -241,7 +241,7 @@ const agriculturalStatus = computed(() => {
               "
             >
               Riesgo {{ riskLevel }}
-            </span>
+            </span> -->
           </div>
 
           <div class="space-y-4">

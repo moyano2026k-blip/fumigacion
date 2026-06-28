@@ -168,7 +168,6 @@ class WeatherController extends Controller
         } elseif ($temp > 35) {
 
             $recommendedTime = '18:00 - 19:00';
-
         }
 
         $location = Location::firstOrCreate(

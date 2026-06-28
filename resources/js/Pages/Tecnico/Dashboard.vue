@@ -230,10 +230,10 @@ const submit = () => {
       <div class="bg-white p-8 rounded-3xl shadow-xl">
         <CloudRain class="w-14 h-14 text-cyan-700 mb-6" />
 
-        <h3 class="text-3xl font-black text-gray-800">Variables</h3>
+        <h3 class="text-3xl font-black text-gray-800">Lluvia</h3>
 
         <p class="text-gray-500 mt-3 font-semibold">
-          {{ weather?.temperature_status ?? "Sin datos" }}
+          {{ weather?.rain_status ?? "Sin datos" }}
         </p>
       </div>
 
