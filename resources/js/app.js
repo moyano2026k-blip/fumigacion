@@ -8,6 +8,12 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
+/*
+        |--------------------------------------------------------------------------
+        | Cambio nombre pestaña
+        |--------------------------------------------------------------------------
+        */
+
 createInertiaApp({
     title: (title) => title ? `${title} - ${appName}` : appName,
     resolve: (name) =>
